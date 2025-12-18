@@ -1,0 +1,43 @@
+{
+  "name": "@edgeandnode/fastmcp-x402-server",
+  "description": "Example FastMCP server with x402 payment integration",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "fastmcp-x402-server": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -b tsconfig.build.json --force",
+    "clean": "rm -rf dist .tsbuildinfo",
+    "dev": "tsx watch src/cli.ts",
+    "start": "node dist/cli.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier . --check --ignore-path ../../.prettierignore",
+    "format:fix": "prettier . --write --list-different --ignore-path ../../.prettierignore",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@ampersend_ai/ampersend-sdk": "^0.0.1",
+    "fastmcp": "github:edgeandnode/fastmcp#358855f0fb94c9537fd0f1c71c6ccb2a92725218",
+    "@coinbase/x402": "^0.6.6",
+    "x402": "^0.6.6",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0"
+  }
+}

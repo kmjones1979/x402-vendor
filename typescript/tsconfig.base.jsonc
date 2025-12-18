@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    // Use incremental builds with project references.
+    "incremental": true,
+    "composite": true,
+
+    // Target modern JavaScript (ES2022+) whilst staying closely compatible with the Node.js module system.
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleDetection": "force",
+    "esModuleInterop": false,
+    "verbatimModuleSyntax": true,
+    "allowJs": false,
+    "rewriteRelativeImportExtensions": true,
+
+    // Emit source- & declaration maps.
+    "declarationMap": true,
+    "sourceMap": true,
+
+    // Opt-in to stricter type checking and correctness guard rails.
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noUnusedLocals": true,
+    "noFallthroughCasesInSwitch": true,
+
+    // Miscellaneous
+    "skipLibCheck": true,
+    "noErrorTruncation": true,
+    "types": [],
+    "plugins": [{ "name": "@effect/language-service" }]
+  }
+}
