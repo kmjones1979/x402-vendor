@@ -21,8 +21,6 @@ A production-ready example application for selling items over x402. This app dem
 
 ## SDK
 
-This app uses the [@ampersend_ai/ampersend-sdk](https://www.npmjs.com/package/@ampersend_ai/ampersend-sdk) package (aliased as `x402`), which is the TypeScript SDK from the [edgeandnode/ampersend-sdk](https://github.com/edgeandnode/ampersend-sdk) repository. The SDK provides x402 payment capabilities for both buyer and seller roles.
-
 Key packages used:
 - `x402` - x402 protocol SDK
 - `@coinbase/x402` - CDP facilitator helper
