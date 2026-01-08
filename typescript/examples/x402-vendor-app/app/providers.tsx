@@ -8,12 +8,15 @@ import { useState, useEffect } from "react"
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient())
 
-  // Initialize Web3Modal only after component is mounted (after hydration)
-  // Use setTimeout to defer initialization until after React hydration is complete
+  // Initialize Web3Modal only after component is fully mounted and hydrated
+  // Using setTimeout with a small delay ensures React hydration is complete
+  // before Web3Modal initializes, preventing "Cannot update during render" errors
   useEffect(() => {
+    // Use a small delay to ensure hydration is complete
+    // This prevents state updates during the Hydrate phase
     const timer = setTimeout(() => {
       initializeWeb3Modal()
-    }, 0)
+    }, 100)
     
     return () => clearTimeout(timer)
   }, [])

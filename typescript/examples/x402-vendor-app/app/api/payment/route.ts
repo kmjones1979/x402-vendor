@@ -47,6 +47,18 @@ export async function POST(request: NextRequest) {
         hasAuthorization: !!signedPaymentPayload.payload?.authorization,
         hasSignature: !!signedPaymentPayload.payload?.signature,
       })
+      
+      // Validate the signed payload structure
+      if (!signedPaymentPayload.payload || !signedPaymentPayload.payload.authorization || !signedPaymentPayload.payload.signature) {
+        console.error("Invalid signedPaymentPayload structure:", {
+          hasPayload: !!signedPaymentPayload.payload,
+          hasAuthorization: !!signedPaymentPayload.payload?.authorization,
+          hasSignature: !!signedPaymentPayload.payload?.signature,
+          payloadKeys: Object.keys(signedPaymentPayload.payload || {}),
+        })
+        throw new Error("Invalid signedPaymentPayload: missing payload, authorization, or signature")
+      }
+      
       paymentPayload = signedPaymentPayload
     } else {
       // Fallback: reconstruct from unsigned payload and signature
@@ -185,15 +197,46 @@ export async function POST(request: NextRequest) {
       }
       
       // Prepare verify request body - the verify endpoint expects { x402Version, paymentPayload, paymentRequirements }
+      // Ensure paymentPayload has the correct structure
+      const safePaymentPayload = toJsonSafe(paymentPayload)
+      
+      // Validate paymentPayload structure before sending
+      if (!safePaymentPayload.x402Version || !safePaymentPayload.scheme || !safePaymentPayload.network) {
+        console.error("Invalid paymentPayload structure:", {
+          hasX402Version: !!safePaymentPayload.x402Version,
+          hasScheme: !!safePaymentPayload.scheme,
+          hasNetwork: !!safePaymentPayload.network,
+          payloadKeys: Object.keys(safePaymentPayload),
+        })
+        throw new Error("Invalid paymentPayload: missing x402Version, scheme, or network")
+      }
+      
+      if (!safePaymentPayload.payload || !safePaymentPayload.payload.authorization || !safePaymentPayload.payload.signature) {
+        console.error("Invalid paymentPayload.payload structure:", {
+          hasPayload: !!safePaymentPayload.payload,
+          hasAuthorization: !!safePaymentPayload.payload?.authorization,
+          hasSignature: !!safePaymentPayload.payload?.signature,
+          payloadKeys: Object.keys(safePaymentPayload.payload || {}),
+        })
+        throw new Error("Invalid paymentPayload: missing payload, authorization, or signature")
+      }
+      
       const verifyRequestBody = {
-        x402Version: typeof paymentPayload.x402Version === "string" 
-          ? parseInt(paymentPayload.x402Version, 10) 
-          : paymentPayload.x402Version,
-        paymentPayload: toJsonSafe(paymentPayload),
+        x402Version: typeof safePaymentPayload.x402Version === "string" 
+          ? parseInt(safePaymentPayload.x402Version, 10) 
+          : safePaymentPayload.x402Version,
+        paymentPayload: safePaymentPayload,
         paymentRequirements: toJsonSafe(paymentIntent.requirements),
       }
       
       console.log("Verify request body:", JSON.stringify(verifyRequestBody, null, 2))
+      console.log("PaymentPayload structure validation:", {
+        x402Version: verifyRequestBody.x402Version,
+        hasPaymentPayload: !!verifyRequestBody.paymentPayload,
+        paymentPayloadKeys: Object.keys(verifyRequestBody.paymentPayload),
+        hasPayloadField: !!verifyRequestBody.paymentPayload.payload,
+        payloadKeys: Object.keys(verifyRequestBody.paymentPayload.payload || {}),
+      })
       
       try {
         const verifyResponse = await fetch(`${facilitatorUrl}/verify`, {
@@ -212,8 +255,12 @@ export async function POST(request: NextRequest) {
             try {
               const errorJson = JSON.parse(errorBody)
               console.error("Verify error JSON:", JSON.stringify(errorJson, null, 2))
+              console.error("Full verify request that failed:", JSON.stringify(verifyRequestBody, null, 2))
+              
+              // Extract more details from error
+              const errorDetails = errorJson.invalidReason || errorJson.errorMessage || errorJson.message || errorBody
               throw new Error(
-                `Payment verification failed: ${verifyResponse.status} ${verifyResponse.statusText} - ${errorJson.errorMessage || errorJson.message || errorBody}`
+                `Payment verification failed: ${verifyResponse.status} ${verifyResponse.statusText} - ${errorDetails}`
               )
             } catch (parseError) {
               // Not JSON, use as-is

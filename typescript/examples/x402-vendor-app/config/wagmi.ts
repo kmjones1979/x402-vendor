@@ -31,6 +31,7 @@ export const config: Config = createConfig({
 let web3ModalInitialized = false
 
 export function initializeWeb3Modal() {
+  // Ensure we're in a browser environment and not during SSR
   if (typeof window === "undefined" || web3ModalInitialized || !projectId) {
     return
   }
